@@ -59,7 +59,7 @@ const DEFAULT_HORSE_IMAGES = {
   Juan: "https://i.postimg.cc/K8nyGpJs/Juan-removebg-preview.png",
   Angel: "https://i.postimg.cc/dVMYKcmy/Angel-removebg-preview.png",
   Daniel: "https://i.postimg.cc/wBQHV4Ns/Daniel-removebg-preview.png",
-  Simon: "https://i.postimg.cc/TY56S3mx/Simon-removebg-preview.png",
+  Simon: "https://i.postimg.cc/6pmmK5vc/caballo-simon.png",
   Camilo: "https://i.postimg.cc/0NP1bG45/Camilo-removebg-preview.png",
   Julio: "https://i.postimg.cc/0NnRmMgY/Julio-removebg-preview.png",
   Diana: "https://i.postimg.cc/G275bVVY/Diana-removebg-previe.png",
