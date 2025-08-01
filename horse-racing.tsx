@@ -35,7 +35,7 @@ interface HorseStats {
 }
 
 // Nombres de caballos para mayor inmersión
-const HORSE_NAMES = ["Christian", "Juan", "Angel", "Daniel", "Simon", "Camilo", "Julio", "Diana", "Vlad"]
+const HORSE_NAMES = ["Christian", "Juan", "Angel", "Daniel", "Simon", "Camilo", "Julio", "Camiloy", "Vlad"]
 
 // Colores para los caballos
 const HORSE_COLORS = [
@@ -55,14 +55,14 @@ const HORSE_COLORS = [
 
 // Replace the DEFAULT_HORSE_IMAGES array with a mapping of horse names to image URLs
 const DEFAULT_HORSE_IMAGES = {
-  Christian: "https://i.postimg.cc/P585mMKm/horse-chr-removebg-preview.png",
+  Christian: "https://i.postimg.cc/Z5R9pJJj/image0.png",
   Juan: "https://i.postimg.cc/K8nyGpJs/Juan-removebg-preview.png",
   Angel: "https://i.postimg.cc/dVMYKcmy/Angel-removebg-preview.png",
   Daniel: "https://i.postimg.cc/wBQHV4Ns/Daniel-removebg-preview.png",
   Simon: "https://i.postimg.cc/6pmmK5vc/caballo-simon.png",
   Camilo: "https://i.postimg.cc/0NP1bG45/Camilo-removebg-preview.png",
   Julio: "https://i.postimg.cc/0NnRmMgY/Julio-removebg-preview.png",
-  Diana: "https://i.postimg.cc/G275bVVY/Diana-removebg-previe.png",
+  Camiloy: "https://i.postimg.cc/sxf7J5BH/camilo-chile.png",
   Vlad: "https://i.postimg.cc/X7GF3RQ5/Vlad.png",
 }
 
@@ -106,7 +106,7 @@ export default function HorseRacing() {
       setPositions(Array(numLanes).fill(0))
       setFinished(Array(numLanes).fill(false))
       setRanks(Array(numLanes).fill(null))
-      setFatigue(Array(numLanes).fill(0))
+      setFatigue(Array(numLanes).fill(0)) 
       setCustomHorseNames(Array(numLanes).fill(""))
       setCustomHorseImages(Array(numLanes).fill(""))
     }
