@@ -17,9 +17,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { EarthLockIcon } from "lucide-react"
 
 const DEFAULT_NUM_LANES = 7
-const MAX_NUM_LANES = 9
+const MAX_NUM_LANES = 12
 const TRACK_LENGTH = 80
 const GAME_SPEED = 300 // ms between updates
 
@@ -35,7 +36,20 @@ interface HorseStats {
 }
 
 // Nombres de caballos para mayor inmersión
-const HORSE_NAMES = ["Christian", "Juan", "Angel", "Daniel", "Simon", "Camilo", "Julio", "Camiloy", "Vlad"]
+const HORSE_NAMES = [
+  "Christian",
+  "Juan",
+  "Angel",
+  "Daniel",
+  "Felipe",
+  "Camilo",
+  "Julio",
+  "Camiloy",
+  "Vlad",
+  "Alejandro",
+  "Maria",
+  "Elkin",
+]
 
 // Colores para los caballos
 const HORSE_COLORS = [
@@ -54,16 +68,19 @@ const HORSE_COLORS = [
 ]
 
 // Replace the DEFAULT_HORSE_IMAGES array with a mapping of horse names to image URLs
-const DEFAULT_HORSE_IMAGES = {
+const DEFAULT_HORSE_IMAGES: Record<string, string> = {
   Christian: "https://i.postimg.cc/Z5R9pJJj/image0.png",
   Juan: "https://i.postimg.cc/K8nyGpJs/Juan-removebg-preview.png",
   Angel: "https://i.postimg.cc/dVMYKcmy/Angel-removebg-preview.png",
-  Daniel: "https://i.postimg.cc/wBQHV4Ns/Daniel-removebg-preview.png",
-  Simon: "https://i.postimg.cc/6pmmK5vc/caballo-simon.png",
+  Daniel: "https://i.postimg.cc/76HrkNCN/cabll2.png",
+  Felipe: "https://i.postimg.cc/cJJcGgxX/Chat-GPT-Image-Mar-13-2026-09-22-18-AM.png",
   Camilo: "https://i.postimg.cc/0NP1bG45/Camilo-removebg-preview.png",
   Julio: "https://i.postimg.cc/0NnRmMgY/Julio-removebg-preview.png",
   Camiloy: "https://i.postimg.cc/sxf7J5BH/camilo-chile.png",
   Vlad: "https://i.postimg.cc/X7GF3RQ5/Vlad.png",
+  Alejandro: "https://i.postimg.cc/9QrchqxW/CABALLO2.png",
+  Maria: "https://i.postimg.cc/4dMhh1qL/caballo-MP.png",
+  Elkin: "https://i.postimg.cc/vHgFbTmk/caball3.png",
 }
 
 // Interface for last place finishers
@@ -98,6 +115,7 @@ export default function HorseRacing() {
   // New state for last place dialog
   const [showLastPlaceDialog, setShowLastPlaceDialog] = useState<boolean>(false)
   const [lastPlaceFinishers, setLastPlaceFinishers] = useState<LastPlaceFinisher[]>([])
+  const [lastPlaceCount, setLastPlaceCount] = useState<2 | 3>(2)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
 
   // Inicializar estados basados en el número de participantes
@@ -163,10 +181,10 @@ export default function HorseRacing() {
       .filter((item) => item.rank !== null)
       .sort((a, b) => (b.rank || 0) - (a.rank || 0)) // Sort in descending order to get last places first
 
-    // Get the two last place finishers (if there are at least 2 horses)
-    const lastTwo = results.slice(0, Math.min(2, results.length))
+    // Mostrar los últimos lugares según la configuración elegida (2 o 3)
+    const lastN = results.slice(0, Math.min(lastPlaceCount, results.length))
 
-    setLastPlaceFinishers(lastTwo as LastPlaceFinisher[])
+    setLastPlaceFinishers(lastN as LastPlaceFinisher[])
     setShowLastPlaceDialog(true)
   }
 
@@ -380,7 +398,9 @@ export default function HorseRacing() {
       return <span key={idx}>{dot}</span>
     })
 
-    const pos = Math.min(Math.floor(positions[lane]), TRACK_LENGTH - 1)
+    const isAtFinish = positions[lane] >= TRACK_LENGTH
+    const maxInTrackPos = Math.max(0, TRACK_LENGTH - 2)
+    const pos = Math.min(Math.floor(positions[lane]), maxInTrackPos)
     const horse = horseStats[lane]
 
     if (!horse) return null
@@ -398,7 +418,7 @@ export default function HorseRacing() {
                 // Si la imagen falla, mostrar el emoji por defecto
                 ;(e.target as HTMLImageElement).style.display = "none"
                 ;(e.target as HTMLImageElement).nextSibling!.textContent = "🏇"
-                ;(e.target as HTMLImageElement).nextSibling!.className = horse.color
+                ;((e.target as HTMLImageElement).nextSibling as HTMLElement | null)!.className = horse.color
               }}
             />
             <span className="hidden">🏇</span>
@@ -408,50 +428,67 @@ export default function HorseRacing() {
       return <span className={`${horse.color} text-2xl`}>🏇</span>
     }
 
-    if (positions[lane] < TRACK_LENGTH) {
-      // Insertar el caballo en la posición correcta
+    // Mientras corre, el caballo se dibuja dentro del carril.
+    // Al llegar a meta se dibuja fuera, a la derecha de la barra final.
+    if (!isAtFinish) {
       coloredTrack[pos] = <span key={`horse-${lane}`}>{renderHorseImage()}</span>
-
-      return (
-        <div className="flex items-center">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className={`mr-2 w-24 truncate font-medium ${horse.color}`}>{horse.name}:</span>
-              </TooltipTrigger>
-              <TooltipContent>
-                <div className="space-y-1 text-xs">
-                  <p>Velocidad: {horse.baseSpeed.toFixed(2)}</p>
-                  <p>Resistencia: {horse.endurance.toFixed(2)}</p>
-                  <p>Prob. Sprint: {(horse.burstChance * 100).toFixed(0)}%</p>
-                  <p>Fatiga: {fatigue[lane].toFixed(1)}</p>
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <span className="font-mono">|{coloredTrack}|</span>
-          {finished[lane] && (
-            <Badge variant="outline" className="ml-2">
-              {ranks[lane]}º lugar
-            </Badge>
-          )}
-        </div>
-      )
-    } else {
-      return (
-        <div className="flex items-center">
-          <span className={`mr-2 w-24 truncate font-medium ${horse.color}`}>{horse.name}:</span>
-          <span className="font-mono">
-            |{coloredTrack}|{renderHorseImage()}
-          </span>
-          {finished[lane] && (
-            <Badge variant="outline" className="ml-2">
-              {ranks[lane]}º lugar
-            </Badge>
-          )}
-        </div>
-      )
     }
+
+    const renderWinnerStartImage = () => {
+      if (!(finished[lane] && ranks[lane] === 1)) return null
+
+      if (horse.imageUrl) {
+        return (
+          <div className="mt-1 h-10 w-10 rounded-md overflow-hidden border border-primary">
+            <img
+              src={horse.imageUrl || "/placeholder.svg"}
+              alt={`${horse.name} ganador`}
+              className="h-full w-full object-cover"
+              onError={(e) => {
+                ;(e.target as HTMLImageElement).style.display = "none"
+                ;(e.target as HTMLImageElement).nextSibling!.textContent = "🏇"
+              }}
+            />
+            <span className="hidden">🏇</span>
+          </div>
+        )
+      }
+
+      return <span className={`${horse.color} mt-1 text-lg`}>🏇</span>
+    }
+
+    return (
+      <div className="flex items-center w-full gap-2">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="w-24 shrink-0">
+                <span className={`block truncate font-medium ${horse.color}`}>{horse.name}:</span>
+                {finished[lane] && (
+                  <Badge variant="outline" className="mt-1">
+                    {ranks[lane]}º lugar
+                  </Badge>
+                )}
+                {renderWinnerStartImage()}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="space-y-1 text-xs">
+                <p>Velocidad: {horse.baseSpeed.toFixed(2)}</p>
+                <p>Resistencia: {horse.endurance.toFixed(2)}</p>
+                <p>Prob. Sprint: {(horse.burstChance * 100).toFixed(0)}%</p>
+                <p>Fatiga: {fatigue[lane].toFixed(1)}</p>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        <div className="flex items-center flex-1 min-w-0 overflow-hidden">
+          <span className="font-mono block w-full overflow-hidden whitespace-nowrap">|{coloredTrack}|</span>
+          {isAtFinish && <span className="ml-2 shrink-0">{renderHorseImage()}</span>}
+        </div>
+      </div>
+    )
   }
 
   const renderResults = () => {
@@ -565,7 +602,7 @@ export default function HorseRacing() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Número de Participantes</DialogTitle>
-            <DialogDescription>Selecciona cuántos caballos participarán en la carrera (máximo 9).</DialogDescription>
+            <DialogDescription>Selecciona cuántos caballos participarán en la carrera (máximo 12).</DialogDescription>
           </DialogHeader>
 
           <div className="py-6 space-y-6">
@@ -675,6 +712,24 @@ export default function HorseRacing() {
             </TabsContent>
           </Tabs>
 
+          <div className="mt-4 border-t pt-4">
+            <Label className="text-sm font-medium">Últimos lugares a mostrar</Label>
+            <RadioGroup
+              value={lastPlaceCount.toString()}
+              onValueChange={(value) => setLastPlaceCount(Number.parseInt(value) as 2 | 3)}
+              className="mt-2 flex items-center gap-6"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="2" id="last-place-2" />
+                <Label htmlFor="last-place-2">2 perdedores</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="3" id="last-place-3" />
+                <Label htmlFor="last-place-3">3 perdedores</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
           <DialogFooter>
             <Button onClick={startRace} className="w-full sm:w-auto">
               ¡Iniciar Carrera!
@@ -692,7 +747,7 @@ export default function HorseRacing() {
           </DialogHeader>
 
           <div className="py-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className={`grid ${lastPlaceFinishers.length === 3 ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2"} gap-4`}>
               {lastPlaceFinishers.map((finisher, index) => (
                 <div key={index} className="flex flex-col items-center p-4 bg-muted rounded-lg">
                   <div className="h-32 w-32 mb-2 border-4 border-red-400 rounded-lg overflow-hidden">
